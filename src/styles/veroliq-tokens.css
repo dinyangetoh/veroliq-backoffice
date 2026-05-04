@@ -1,0 +1,134 @@
+:root {
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Brand — Veroliq */
+  --color-brand-50:   #EFF6FF;
+  --color-brand-100:  #DBEAFE;
+  --color-brand-200:  #BFDBFE;
+  --color-brand-300:  #93C5FD;
+  --color-brand-400:  #60A5FA;
+  --color-brand-500:  #3B82F6;
+  --color-brand-600:  #1D4ED8;
+  --color-brand-700:  #1E3A5F;
+  --color-brand-900:  #0F172A;
+
+  --color-success-50:  #F0FDF4;
+  --color-success-100: #DCFCE7;
+  --color-success-500: #22C55E;
+  --color-success-600: #16A34A;
+  --color-success-700: #15803D;
+
+  --color-warning-50:  #FFFBEB;
+  --color-warning-100: #FEF3C7;
+  --color-warning-500: #F59E0B;
+  --color-warning-600: #D97706;
+
+  --color-danger-50:   #FEF2F2;
+  --color-danger-100:  #FEE2E2;
+  --color-danger-500:  #EF4444;
+  --color-danger-600:  #DC2626;
+
+  --color-info-50:     #F0F9FF;
+  --color-info-100:    #E0F2FE;
+  --color-info-500:    #0EA5E9;
+  --color-info-600:    #0284C7;
+
+  --color-slate-50:   #F8FAFC;
+  --color-slate-100:  #F1F5F9;
+  --color-slate-200:  #E2E8F0;
+  --color-slate-300:  #CBD5E1;
+  --color-slate-400:  #94A3B8;
+  --color-slate-500:  #64748B;
+  --color-slate-600:  #475569;
+  --color-slate-700:  #334155;
+  --color-slate-800:  #1E293B;
+  --color-slate-900:  #0F172A;
+
+  --color-bg:             #F8FAFC;
+  --color-surface:        #FFFFFF;
+  --color-border:         #E2E8F0;
+  --color-border-subtle:  #F1F5F9;
+
+  --color-text-primary:   #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-tertiary:  #94A3B8;
+  --color-text-inverse:   #FFFFFF;
+
+  --color-veroliq-gold:       #D4A017;
+  --color-veroliq-gold-light: #FEF9EC;
+
+  --intent-pricing-bg:   #EFF6FF;
+  --intent-pricing-text: #1D4ED8;
+  --intent-pricing-border: #BFDBFE;
+
+  --intent-demo-bg:   #F0FDF4;
+  --intent-demo-text: #15803D;
+  --intent-demo-border: #DCFCE7;
+
+  --intent-contact-bg:   #FFF7ED;
+  --intent-contact-text: #C2410C;
+  --intent-contact-border: #FED7AA;
+
+  --intent-fallback-bg:   #FEF3C7;
+  --intent-fallback-text: #92400E;
+  --intent-fallback-border: #FDE68A;
+
+  --intent-exit-bg:   #F5F3FF;
+  --intent-exit-text: #5B21B6;
+  --intent-exit-border: #DDD6FE;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+@keyframes veroliq-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.8); opacity: 0; }
+}
+
+.veroliq-pulse {
+  position: relative;
+}
+.veroliq-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--color-success-500);
+  animation: veroliq-pulse 2s ease-in-out infinite;
+}
+
+@keyframes veroliq-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0); }
+  50% { box-shadow: 0 0 8px 2px rgba(212, 160, 23, 0.3); }
+}
+.veroliq-upgrade-glow {
+  animation: veroliq-glow 3s ease-in-out infinite;
+}
+
+@keyframes veroliq-spin {
+  to { transform: rotate(360deg); }
+}
+.veroliq-spin {
+  animation: veroliq-spin 1s linear infinite;
+}
+
+.veroliq-metric {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 48px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.veroliq-mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
