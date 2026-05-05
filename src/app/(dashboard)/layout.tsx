@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { LayoutDashboard, Globe, Users, MessageSquare, Briefcase, Activity, Bug } from "lucide-react";
+import { LayoutDashboard, Globe, Users, MessageSquare, Briefcase, Activity, Bug, Bell, FileText } from "lucide-react";
+import { LogoutButton } from "./LogoutButton";
 
 export default function DashboardLayout({
   children,
@@ -50,8 +51,24 @@ export default function DashboardLayout({
                 <Activity className="w-5 h-5 text-gray-400" /> Widget Events
               </Link>
             </li>
+            <li className="pt-3">
+              <span className="px-3 text-[11px] uppercase tracking-wider text-gray-400">Notifications</span>
+            </li>
+            <li>
+              <Link href="/notifications" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
+                <Bell className="w-5 h-5 text-gray-400" /> Monitoring
+              </Link>
+            </li>
+            <li>
+              <Link href="/notifications/templates" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
+                <FileText className="w-5 h-5 text-gray-400" /> Templates
+              </Link>
+            </li>
           </ul>
         </nav>
+        <div className="p-3 border-t border-gray-200">
+          <LogoutButton />
+        </div>
       </aside>
 
       {/* Main Content */}
