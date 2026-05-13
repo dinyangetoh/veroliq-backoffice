@@ -4,20 +4,29 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock } from 'lucide-react';
 import { useAdminLoginMutation } from '@/redux/api/adminApi';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [adminLogin, { isLoading }] = useAdminLoginMutation();
+  const [adminLogin, { isLoading, isError, error: errorMessage }] = useAdminLoginMutation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isError) {
+      toast.error('Authentication failed. Please try again.');
+    }
+  }, [isError, errorMessage, toast]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
     try {
       await adminLogin({ email, password }).unwrap();
+      toast.success('Signed in.');
       const next = searchParams.get('next') || '/';
       router.replace(next);
     } catch (err: any) {

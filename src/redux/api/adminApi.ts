@@ -1,10 +1,4 @@
-import {
-  createApi,
-  fetchBaseQuery,
-  type BaseQueryFn,
-  type FetchArgs,
-  type FetchBaseQueryError,
-} from '@reduxjs/toolkit/query/react';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const baseUrl =
   process.env.NEXT_PUBLIC_VEROLIQ_API_URL || 'http://localhost:3001';
@@ -14,55 +8,9 @@ const rawBaseQuery = fetchBaseQuery({
   credentials: 'include',
 });
 
-let refreshing: Promise<unknown> | null = null;
-
-function redirectToLogin() {
-  if (typeof window === 'undefined') return;
-  if (window.location.pathname.startsWith('/login')) return;
-  const next = encodeURIComponent(
-    `${window.location.pathname}${window.location.search}`,
-  );
-  window.location.href = `/login?next=${next}`;
-}
-
-const baseQueryWithAuth: BaseQueryFn<
-  string | FetchArgs,
-  unknown,
-  FetchBaseQueryError
-> = async (args, api, extraOptions) => {
-  let result = await rawBaseQuery(args, api, extraOptions);
-  if (result.error?.status === 401) {
-    const isAuthEndpoint =
-      typeof args !== 'string' &&
-      typeof args?.url === 'string' &&
-      args.url.startsWith('/admin/auth/');
-    if (!isAuthEndpoint) {
-      if (!refreshing) {
-        refreshing = rawBaseQuery(
-          { url: '/admin/auth/refresh', method: 'POST' },
-          api,
-          extraOptions,
-        ).finally(() => {
-          refreshing = null;
-        });
-      }
-      const refreshed = (await refreshing) as Awaited<ReturnType<typeof rawBaseQuery>>;
-      if (refreshed.error) {
-        redirectToLogin();
-        return result;
-      }
-      result = await rawBaseQuery(args, api, extraOptions);
-      if (result.error?.status === 401) {
-        redirectToLogin();
-      }
-    }
-  }
-  return result;
-};
-
 export const adminApi = createApi({
   reducerPath: 'adminApi',
-  baseQuery: baseQueryWithAuth,
+  baseQuery: rawBaseQuery,
   tagTypes: [
     'Admin',
     'Sites',
@@ -88,12 +36,6 @@ export const adminApi = createApi({
     adminLogout: builder.mutation<{ success: boolean }, void>({
       query: () => ({ url: '/admin/auth/logout', method: 'POST' }),
       invalidatesTags: ['AdminSession'],
-    }),
-    adminRefresh: builder.mutation<
-      { email: string; accessTokenExpiresIn: string },
-      void
-    >({
-      query: () => ({ url: '/admin/auth/refresh', method: 'POST' }),
     }),
     getMetrics: builder.query<any, void>({
       query: () => '/admin/metrics',
@@ -271,7 +213,6 @@ export const adminApi = createApi({
 export const {
   useAdminLoginMutation,
   useAdminLogoutMutation,
-  useAdminRefreshMutation,
   useGetMetricsQuery,
   useGetSitesQuery,
   useGetSessionsQuery,
