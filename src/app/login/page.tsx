@@ -1,37 +1,36 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Lock } from 'lucide-react';
-import { useAdminLoginMutation } from '@/redux/api/adminApi';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Lock } from "lucide-react";
+import { useAdminLoginMutation } from "@/redux/api/adminApi";
+import { toast } from "sonner";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [adminLogin, { isLoading, isError, error: errorMessage }] = useAdminLoginMutation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isError) {
-      toast.error('Authentication failed. Please try again.');
+      toast.error("Authentication failed. Please try again.");
     }
-  }, [isError, errorMessage, toast]);
+  }, [isError, errorMessage]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
+    setError("");
     try {
       await adminLogin({ email, password }).unwrap();
-      toast.success('Signed in.');
-      const next = searchParams.get('next') || '/';
+      toast.success("Signed in.");
+      const next = searchParams.get("next") || "/";
       router.replace(next);
-    } catch (err: any) {
-      const message =
-        err?.data?.error?.message ?? err?.error ?? 'Email or password incorrect.';
+    } catch (err: unknown) {
+      const e = err as { data?: { error?: { message?: string } }; error?: string };
+      const message = e?.data?.error?.message ?? e?.error ?? "Email or password incorrect.";
       setError(message);
     }
   }
@@ -44,12 +43,8 @@ export default function LoginPage() {
             <Lock className="w-6 h-6 text-white" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Veroliq Backoffice
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in with your admin account
-        </p>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Veroliq Backoffice</h2>
+        <p className="mt-2 text-center text-sm text-gray-600">Sign in with your admin account</p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -99,12 +94,28 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {isLoading ? "Signing in..." : "Sign in"}
               </button>
             </div>
           </form>
         </div>
       </div>
     </div>
+  );
+}
+
+function LoginFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12">
+      <p className="text-sm text-gray-600">Loading…</p>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginForm />
+    </Suspense>
   );
 }
