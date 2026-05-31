@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { AdminSite, AdminSiteDetail, PlatformMetrics, SiteDashboard } from '@/types/admin';
 
 const baseUrl =
   process.env.NEXT_PUBLIC_VEROLIQ_API_URL || 'http://localhost:3001';
@@ -37,13 +38,80 @@ export const adminApi = createApi({
       query: () => ({ url: '/admin/auth/logout', method: 'POST' }),
       invalidatesTags: ['AdminSession'],
     }),
-    getMetrics: builder.query<any, void>({
+    getMetrics: builder.query<PlatformMetrics, void>({
       query: () => '/admin/metrics',
       providesTags: ['Admin'],
     }),
-    getSites: builder.query<any, void>({
-      query: () => '/admin/sites',
+    getSites: builder.query<
+      { sites: AdminSite[]; total: number; page: number; limit: number },
+      { page?: number; limit?: number; q?: string; live?: boolean } | void
+    >({
+      query: (params) => ({
+        url: '/admin/sites',
+        params: params
+          ? {
+              page: params.page,
+              limit: params.limit,
+              q: params.q,
+              live: params.live ? '1' : undefined,
+            }
+          : undefined,
+      }),
       providesTags: ['Sites'],
+    }),
+    getSiteDetail: builder.query<{ site: AdminSiteDetail }, string>({
+      query: (siteId) => `/admin/sites/${siteId}`,
+      providesTags: (_r, _e, siteId) => [{ type: 'Sites', id: siteId }],
+    }),
+    getSiteDashboard: builder.query<
+      SiteDashboard,
+      { siteId: string; days?: number }
+    >({
+      query: ({ siteId, days }) => ({
+        url: `/admin/sites/${siteId}/dashboard`,
+        params: days ? { days } : undefined,
+      }),
+      providesTags: (_r, _e, { siteId }) => [{ type: 'Sites', id: siteId }],
+    }),
+    getSiteSessions: builder.query<
+      { sessions: unknown[]; total: number; page: number; limit: number },
+      { siteId: string; page?: number; limit?: number }
+    >({
+      query: ({ siteId, page, limit }) => ({
+        url: `/admin/sites/${siteId}/sessions`,
+        params: { page, limit },
+      }),
+      providesTags: ['Sessions'],
+    }),
+    getSiteLeads: builder.query<
+      { leads: unknown[]; total: number; page: number; limit: number },
+      { siteId: string; page?: number; limit?: number }
+    >({
+      query: ({ siteId, page, limit }) => ({
+        url: `/admin/sites/${siteId}/leads`,
+        params: { page, limit },
+      }),
+      providesTags: ['Leads'],
+    }),
+    getSiteCrawls: builder.query<
+      { crawls: unknown[]; total: number; page: number; limit: number },
+      { siteId: string; page?: number; limit?: number }
+    >({
+      query: ({ siteId, page, limit }) => ({
+        url: `/admin/sites/${siteId}/crawls`,
+        params: { page, limit },
+      }),
+      providesTags: ['Crawls'],
+    }),
+    getSiteEvents: builder.query<
+      { events: unknown[]; total: number; page: number; limit: number },
+      { siteId: string; page?: number; limit?: number; type?: string }
+    >({
+      query: ({ siteId, page, limit, type }) => ({
+        url: `/admin/sites/${siteId}/events`,
+        params: { page, limit, type },
+      }),
+      providesTags: ['Events'],
     }),
     getSessions: builder.query<any, void>({
       query: () => '/admin/sessions',
@@ -215,6 +283,12 @@ export const {
   useAdminLogoutMutation,
   useGetMetricsQuery,
   useGetSitesQuery,
+  useGetSiteDetailQuery,
+  useGetSiteDashboardQuery,
+  useGetSiteSessionsQuery,
+  useGetSiteLeadsQuery,
+  useGetSiteCrawlsQuery,
+  useGetSiteEventsQuery,
   useGetSessionsQuery,
   useGetMessagesQuery,
   useGetLeadsQuery,
