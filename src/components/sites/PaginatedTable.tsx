@@ -7,6 +7,7 @@ type PaginatedTableProps = {
   page: number;
   limit: number;
   onPageChange: (page: number) => void;
+  onRowClick?: (row: Record<string, unknown>) => void;
   emptyMessage?: string;
 };
 
@@ -17,6 +18,7 @@ export function PaginatedTable({
   page,
   limit,
   onPageChange,
+  onRowClick,
   emptyMessage = 'No records found.',
 }: PaginatedTableProps) {
   const totalPages = Math.max(Math.ceil(total / limit), 1);
@@ -46,7 +48,11 @@ export function PaginatedTable({
               </tr>
             ) : (
               rows.map((row, i) => (
-                <tr key={String(row.id ?? i)} className="hover:bg-gray-50">
+                <tr
+                  key={String(row.id ?? i)}
+                  className={onRowClick ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                >
                   {columns.map((col) => (
                     <td key={col.key} className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
                       {col.render ? col.render(row) : String(row[col.key] ?? '—')}

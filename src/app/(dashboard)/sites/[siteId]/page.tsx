@@ -2,16 +2,19 @@
 
 import { Suspense, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { skipToken } from '@reduxjs/toolkit/query';
 import {
   useGetSiteDetailQuery,
   useGetSiteDashboardQuery,
   useGetSiteSessionsQuery,
+  useGetSiteSessionDetailQuery,
   useGetSiteLeadsQuery,
   useGetSiteCrawlsQuery,
   useGetSiteEventsQuery,
 } from '@/redux/api/adminApi';
 import { SiteHeader, SiteOverviewTab } from '@/components/sites/SiteOverviewTab';
 import { PaginatedTable } from '@/components/sites/PaginatedTable';
+import { SessionDetailDrawer } from '@/components/sites/SessionDetailDrawer';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -39,6 +42,7 @@ function SiteDetailContent() {
   const tab = (searchParams.get('tab') as TabId) || 'overview';
   const [days, setDays] = useState(30);
   const [page, setPage] = useState(1);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useGetSiteDetailQuery(siteId);
   const { data: dashboard, isLoading: dashboardLoading } = useGetSiteDashboardQuery(
@@ -47,7 +51,11 @@ function SiteDetailContent() {
   );
 
   const listArgs = { siteId, page, limit: 25 };
-  const { data: sessionsData } = useGetSiteSessionsQuery(listArgs, { skip: tab !== 'sessions' });
+  const { data: sessionsData } = useGetSiteSessionsQuery({ ...listArgs, chatOnly: true }, { skip: tab !== 'sessions' });
+  const { data: sessionDetail } = useGetSiteSessionDetailQuery(
+    selectedSessionId ? { siteId, sessionId: selectedSessionId } : skipToken,
+    { skip: !selectedSessionId },
+  );
   const { data: leadsData } = useGetSiteLeadsQuery(listArgs, { skip: tab !== 'leads' });
   const { data: crawlsData } = useGetSiteCrawlsQuery(listArgs, { skip: tab !== 'crawls' });
   const { data: eventsData } = useGetSiteEventsQuery(listArgs, { skip: tab !== 'events' });
@@ -103,27 +111,46 @@ function SiteDetailContent() {
       )}
 
       {tab === 'sessions' && (
-        <PaginatedTable
-          columns={[
-            {
-              key: 'startedAt',
-              label: 'Started',
-              render: (r) => new Date(String(r.startedAt)).toLocaleString(),
-            },
-            { key: 'pageUrl', label: 'Page' },
-            { key: 'messageCount', label: 'Messages' },
-            {
-              key: 'hasLead',
-              label: 'Lead',
-              render: (r) => (r.hasLead ? 'Yes' : '—'),
-            },
-          ]}
-          rows={sessionRows}
-          total={sessionsData?.total ?? 0}
-          page={page}
-          limit={25}
-          onPageChange={setPage}
-        />
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="rounded-full bg-indigo-50 px-3 py-1 font-medium text-indigo-700">
+              Chat Sessions: {sessionsData?.counts?.chatSessions?.toLocaleString() ?? 0}
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">
+              All Sessions: {sessionsData?.counts?.allSessions?.toLocaleString() ?? 0}
+            </span>
+            <span className="rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-700">
+              Empty Sessions: {sessionsData?.counts?.emptySessions?.toLocaleString() ?? 0}
+            </span>
+          </div>
+          <PaginatedTable
+            columns={[
+              {
+                key: 'startedAt',
+                label: 'Started',
+                render: (r) => new Date(String(r.startedAt)).toLocaleString(),
+              },
+              { key: 'pageUrl', label: 'Page' },
+              { key: 'messageCount', label: 'Messages' },
+              {
+                key: 'hasLead',
+                label: 'Lead',
+                render: (r) => (r.hasLead ? 'Yes' : '—'),
+              },
+            ]}
+            rows={sessionRows}
+            total={sessionsData?.total ?? 0}
+            page={page}
+            limit={25}
+            onPageChange={setPage}
+            onRowClick={(row) => setSelectedSessionId(String(row.id))}
+          />
+          <SessionDetailDrawer
+            open={Boolean(selectedSessionId)}
+            onClose={() => setSelectedSessionId(null)}
+            detail={sessionDetail}
+          />
+        </div>
       )}
 
       {tab === 'leads' && (

@@ -4,7 +4,8 @@ const ROWS: Array<{ key: keyof WindowCounts; label: string }> = [
   { key: 'users', label: 'Users' },
   { key: 'sites', label: 'Sites' },
   { key: 'leads', label: 'Leads' },
-  { key: 'sessions', label: 'Sessions' },
+  { key: 'allSessions', label: 'All Sessions' },
+  { key: 'chatSessions', label: 'Chat Sessions' },
   { key: 'messages', label: 'Messages' },
 ];
 

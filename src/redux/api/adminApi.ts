@@ -1,5 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { AdminSite, AdminSiteDetail, PlatformMetrics, SiteDashboard } from '@/types/admin';
+import type {
+  AdminSite,
+  AdminSiteDetail,
+  PlatformMetrics,
+  MessageListResponse,
+  SessionDetailResponse,
+  SessionListResponse,
+  SiteDashboard,
+} from '@/types/admin';
 
 const baseUrl =
   process.env.NEXT_PUBLIC_VEROLIQ_API_URL || 'http://localhost:3001';
@@ -74,13 +82,20 @@ export const adminApi = createApi({
       providesTags: (_r, _e, { siteId }) => [{ type: 'Sites', id: siteId }],
     }),
     getSiteSessions: builder.query<
-      { sessions: unknown[]; total: number; page: number; limit: number },
-      { siteId: string; page?: number; limit?: number }
+      SessionListResponse,
+      { siteId: string; page?: number; limit?: number; chatOnly?: boolean }
     >({
-      query: ({ siteId, page, limit }) => ({
+      query: ({ siteId, page, limit, chatOnly }) => ({
         url: `/admin/sites/${siteId}/sessions`,
-        params: { page, limit },
+        params: { page, limit, chatOnly: chatOnly == null ? undefined : (chatOnly ? '1' : '0') },
       }),
+      providesTags: ['Sessions'],
+    }),
+    getSiteSessionDetail: builder.query<
+      SessionDetailResponse,
+      { siteId: string; sessionId: string }
+    >({
+      query: ({ siteId, sessionId }) => `/admin/sites/${siteId}/sessions/${sessionId}`,
       providesTags: ['Sessions'],
     }),
     getSiteLeads: builder.query<
@@ -113,12 +128,59 @@ export const adminApi = createApi({
       }),
       providesTags: ['Events'],
     }),
-    getSessions: builder.query<any, void>({
-      query: () => '/admin/sessions',
+    getSessions: builder.query<
+      SessionListResponse,
+      { page?: number; limit?: number; chatOnly?: boolean } | void
+    >({
+      query: (params) => ({
+        url: '/admin/sessions',
+        params: params
+          ? {
+              page: params.page,
+              limit: params.limit,
+              chatOnly: params.chatOnly == null ? undefined : (params.chatOnly ? '1' : '0'),
+            }
+          : undefined,
+      }),
       providesTags: ['Sessions'],
     }),
-    getMessages: builder.query<any, void>({
-      query: () => '/admin/messages',
+    getMessages: builder.query<
+      MessageListResponse,
+      {
+        page?: number;
+        limit?: number;
+        siteId?: string;
+        sessionId?: string;
+        role?: 'user' | 'assistant';
+        q?: string;
+        from?: string;
+        to?: string;
+        hasLead?: boolean;
+      } | void
+    >({
+      query: (params) => ({
+        url: '/admin/messages',
+        params: params
+          ? {
+              page: params.page,
+              limit: params.limit,
+              siteId: params.siteId,
+              sessionId: params.sessionId,
+              role: params.role,
+              q: params.q,
+              from: params.from,
+              to: params.to,
+              hasLead: params.hasLead == null ? undefined : (params.hasLead ? '1' : '0'),
+            }
+          : undefined,
+      }),
+      providesTags: ['Messages'],
+    }),
+    getSessionMessages: builder.query<
+      SessionDetailResponse,
+      { sessionId: string }
+    >({
+      query: ({ sessionId }) => `/admin/sessions/${sessionId}/messages`,
       providesTags: ['Messages'],
     }),
     getLeads: builder.query<any, void>({
@@ -286,11 +348,13 @@ export const {
   useGetSiteDetailQuery,
   useGetSiteDashboardQuery,
   useGetSiteSessionsQuery,
+  useGetSiteSessionDetailQuery,
   useGetSiteLeadsQuery,
   useGetSiteCrawlsQuery,
   useGetSiteEventsQuery,
   useGetSessionsQuery,
   useGetMessagesQuery,
+  useGetSessionMessagesQuery,
   useGetLeadsQuery,
   useGetCrawlsQuery,
   useGetEventsQuery,

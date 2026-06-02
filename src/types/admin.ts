@@ -2,7 +2,9 @@ export type GrowthMetricKey =
   | 'users'
   | 'sites'
   | 'leads'
-  | 'sessions'
+  | 'allSessions'
+  | 'chatSessions'
+  | 'emptySessions'
   | 'messages'
   | 'events';
 
@@ -19,6 +21,9 @@ export type PlatformMetrics = {
     sites: number;
     leads: number;
     sessions: number;
+    allSessions: number;
+    chatSessions: number;
+    emptySessions: number;
     messages: number;
     crawls: number;
     events: number;
@@ -29,6 +34,9 @@ export type PlatformMetrics = {
   sites: number;
   leads: number;
   sessions: number;
+  allSessions: number;
+  chatSessions: number;
+  emptySessions: number;
   messages: number;
   crawls: number;
   events: number;
@@ -51,6 +59,8 @@ export type PlatformMetrics = {
     sites: number[];
     leads: number[];
     sessions: number[];
+    allSessions: number[];
+    chatSessions: number[];
   };
   recentSignups: Array<{
     id: string;
@@ -131,4 +141,77 @@ export type SiteDashboard = {
     avgConfidenceScore: number;
     confidenceThresholdPercent: number;
   };
+};
+
+export type SessionListResponse = {
+  sessions: Array<{
+    id: string;
+    sessionToken: string;
+    pageUrl: string;
+    startedAt: string;
+    messageCount: number;
+    hasLead?: boolean;
+    site?: { domain: string };
+  }>;
+  total: number;
+  page: number;
+  limit: number;
+  chatOnly: boolean;
+  counts: {
+    allSessions: number;
+    chatSessions: number;
+    emptySessions: number;
+  };
+};
+
+export type SessionDetailResponse = {
+  session: {
+    id: string;
+    sessionToken: string;
+    startedAt: string;
+    pageUrl: string;
+    messageCount: number;
+    hasLead: boolean;
+    site?: { id: string; domain: string };
+    leadCaptured?: boolean;
+  };
+  stats: {
+    assistantMessageCount: number;
+    avgResponseTimeMs: number | null;
+    avgConfidenceScore: number | null;
+  };
+  messages: Array<{
+    id: string;
+    role: 'user' | 'assistant' | string;
+    content: string;
+    createdAt: string;
+    responseTimeMs?: number | null;
+    confidenceScore?: number | null;
+  }>;
+};
+
+export type MessageListResponse = {
+  messages: Array<{
+    id: string;
+    role: 'user' | 'assistant' | string;
+    content: string;
+    createdAt: string;
+    confidenceScore?: number | null;
+    responseTimeMs?: number | null;
+    intentDetected?: string | null;
+    intentScore?: number | null;
+    session: {
+      id: string;
+      sessionToken: string;
+      pageUrl: string;
+      startedAt: string;
+      siteId: string;
+      leadCaptured: boolean;
+      messageCount: number;
+      site: { domain: string };
+    };
+  }>;
+  total: number;
+  page: number;
+  limit: number;
 };

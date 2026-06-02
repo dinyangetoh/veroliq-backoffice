@@ -59,15 +59,22 @@ export default function DashboardPage() {
           icon={<Briefcase className="h-5 w-5 text-white/80" />}
         />
         <PlatformKpiCard
-          title="Total Sessions"
-          value={totals.sessions}
-          wow={growth.week.sessions}
-          mom={growth.month.sessions}
+          title="Chat Sessions"
+          value={totals.chatSessions}
+          wow={growth.week.chatSessions}
+          mom={growth.month.chatSessions}
           icon={<Activity className="h-5 w-5 text-purple-600" />}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <PlatformKpiCard
+          title="All Sessions"
+          value={totals.allSessions}
+          wow={growth.week.allSessions}
+          mom={growth.month.allSessions}
+          icon={<Activity className="h-5 w-5 text-indigo-600" />}
+        />
         <PlatformKpiCard
           title="Total Messages"
           value={totals.messages}
@@ -75,24 +82,28 @@ export default function DashboardPage() {
           mom={growth.month.messages}
           icon={<MessageSquare className="h-5 w-5 text-pink-600" />}
         />
-        <PlatformKpiCard
-          title="Widget Events"
-          value={totals.events}
-          wow={growth.week.events}
-          mom={growth.month.events}
-          icon={<Activity className="h-5 w-5 text-rose-600" />}
-        />
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-gray-900">Chat Sessions / All Sessions</h3>
+        <p className="mt-1 text-3xl font-semibold text-gray-900">
+          {totals.allSessions > 0 ? `${Math.round((totals.chatSessions / totals.allSessions) * 100)}%` : '0%'}
+        </p>
+        <p className="text-xs text-gray-500">
+          {totals.chatSessions.toLocaleString()} chat sessions from {totals.allSessions.toLocaleString()} total sessions
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <h3 className="text-sm font-semibold text-gray-900">Platform activity — last 30 days</h3>
-          <p className="text-xs text-gray-500">Sessions, leads, and new signups per day</p>
+          <p className="text-xs text-gray-500">All sessions, chat sessions, leads, and signups per day</p>
           <div className="mt-4">
             <PlatformTrendChart
               labels={timeline.labels}
               leads={timeline.leads}
-              sessions={timeline.sessions}
+              allSessions={timeline.allSessions}
+              chatSessions={timeline.chatSessions}
               users={timeline.users}
             />
           </div>

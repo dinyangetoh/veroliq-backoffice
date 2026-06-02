@@ -14,7 +14,8 @@ import {
 type PlatformTrendChartProps = {
   labels: string[];
   leads: number[];
-  sessions: number[];
+  allSessions: number[];
+  chatSessions: number[];
   users?: number[];
 };
 
@@ -28,11 +29,12 @@ function formatLabel(label: string) {
   return label;
 }
 
-export function PlatformTrendChart({ labels, leads, sessions, users }: PlatformTrendChartProps) {
+export function PlatformTrendChart({ labels, leads, allSessions, chatSessions, users }: PlatformTrendChartProps) {
   const data = labels.map((label, i) => ({
     label,
     leads: leads[i] ?? 0,
-    sessions: sessions[i] ?? 0,
+    allSessions: allSessions[i] ?? 0,
+    chatSessions: chatSessions[i] ?? 0,
     users: users?.[i] ?? 0,
   }));
 
@@ -65,7 +67,8 @@ export function PlatformTrendChart({ labels, leads, sessions, users }: PlatformT
             }}
           />
           <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-          <Line type="monotone" dataKey="sessions" name="Sessions" stroke="#6366f1" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="allSessions" name="All Sessions" stroke="#6366f1" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="chatSessions" name="Chat Sessions" stroke="#8b5cf6" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="leads" name="Leads" stroke="#16a34a" strokeWidth={2} dot={false} />
           {users && (
             <Line type="monotone" dataKey="users" name="Signups" stroke="#0ea5e9" strokeWidth={2} dot={false} />
