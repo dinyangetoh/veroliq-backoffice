@@ -47,10 +47,6 @@ export default function MessagesPage() {
     return Array.from(entries.entries());
   }, [data?.messages]);
 
-  if (isLoading) return <div className="p-8 text-gray-500">Loading messages...</div>;
-  if (error) return <div className="p-8 text-red-500">Failed to load messages.</div>;
-
-  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / 50));
   const roleChartData = useMemo(() => {
     const userCount = (data?.messages ?? []).filter((m) => m.role === 'user').length;
     const assistantCount = (data?.messages ?? []).filter((m) => m.role === 'assistant').length;
@@ -59,6 +55,7 @@ export default function MessagesPage() {
       { name: 'Assistant', value: assistantCount },
     ];
   }, [data?.messages]);
+
   const qualityChartData = useMemo(() => {
     const assistantMessages = (data?.messages ?? []).filter((m) => m.role === 'assistant');
     const withLatency = assistantMessages.filter((m) => m.responseTimeMs != null);
@@ -78,6 +75,11 @@ export default function MessagesPage() {
       { name: 'Avg Confidence', value: avgConfidence },
     ];
   }, [data?.messages]);
+
+  if (isLoading) return <div className="p-8 text-gray-500">Loading messages...</div>;
+  if (error) return <div className="p-8 text-red-500">Failed to load messages.</div>;
+
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / 50));
 
   return (
     <div className="space-y-6">
