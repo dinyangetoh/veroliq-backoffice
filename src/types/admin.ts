@@ -187,6 +187,8 @@ export type SessionDetailResponse = {
     createdAt: string;
     responseTimeMs?: number | null;
     confidenceScore?: number | null;
+    intentDetected?: string | null;
+    intentScore?: number | null;
   }>;
 };
 

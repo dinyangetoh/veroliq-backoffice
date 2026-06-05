@@ -43,12 +43,33 @@ export default function SessionsPage() {
     if (!thread) return null;
     if (thread.messages.length === 0) return null;
 
-    const first = new Date(thread.messages[0].createdAt).getTime();
-    const last = new Date(thread.messages[thread.messages.length - 1].createdAt).getTime();
-    if (!Number.isFinite(first) || !Number.isFinite(last)) return null;
+    const startMsCandidate = thread.session?.startedAt
+      ? new Date(thread.session.startedAt).getTime()
+      : NaN;
+    const firstUser = thread.messages.find((m) => m.role === 'user');
+    const firstUserMsCandidate = firstUser ? new Date(firstUser.createdAt).getTime() : NaN;
+    const startMs = Number.isFinite(startMsCandidate) ? startMsCandidate : firstUserMsCandidate;
 
-    const durationMs = Math.max(0, last - first);
+    const lastAssistant = [...thread.messages].reverse().find((m) => m.role === 'assistant');
+    const endMs = lastAssistant ? new Date(lastAssistant.createdAt).getTime() : NaN;
+
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return null;
+
+    const durationMs = Math.max(0, endMs - startMs);
     return formatDurationMs(durationMs);
+  }, [thread]);
+
+  const selectedMetadata = useMemo(() => {
+    if (!thread) return null;
+    if (thread.messages.length === 0) return null;
+
+    const assistantMessages = thread.messages.filter((m) => m.role === 'assistant');
+
+    const intent = assistantMessages.find((m) => m.intentDetected)?.intentDetected ?? null;
+    const confidenceScore = assistantMessages.find((m) => m.confidenceScore != null)?.confidenceScore ?? null;
+    const responseTimeMs = assistantMessages.find((m) => m.responseTimeMs != null)?.responseTimeMs ?? null;
+
+    return { intent, confidenceScore, responseTimeMs };
   }, [thread]);
 
   if (isLoading) return <div className="p-8 text-gray-500">Loading sessions...</div>;
@@ -146,26 +167,31 @@ export default function SessionsPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(session.startedAt).toLocaleString()}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[220px]">{session.sessionToken}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">{session.site?.domain}</td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  <div className="flex flex-col gap-1">
-                    <span className="truncate max-w-[320px]">{session.pageUrl}</span>
+                <td className="px-6 py-4 text-xs text-gray-600">
+                  {session.id === selectedSessionId && selectedMetadata ? (
                     <div className="flex flex-wrap gap-1">
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-700">
-                        msgs: {session.messageCount}
-                      </span>
-                      {session.hasLead != null ? (
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] ${
-                            session.hasLead
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : 'bg-amber-50 text-amber-700'
-                          }`}
-                        >
-                          {session.hasLead ? 'lead: yes' : 'lead: no'}
+                      {selectedMetadata.intent ? (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5">intent: {selectedMetadata.intent}</span>
+                      ) : null}
+                      {selectedMetadata.confidenceScore != null ? (
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                          conf: {selectedMetadata.confidenceScore.toFixed(3)}
                         </span>
                       ) : null}
+                      {selectedMetadata.responseTimeMs != null ? (
+                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">
+                          latency: {selectedMetadata.responseTimeMs}ms
+                        </span>
+                      ) : null}
+                      {selectedMetadata.intent == null &&
+                      selectedMetadata.confidenceScore == null &&
+                      selectedMetadata.responseTimeMs == null ? (
+                        <span className="text-gray-400">—</span>
+                      ) : null}
                     </div>
-                  </div>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {session.id === selectedSessionId ? selectedDuration ?? '—' : '—'}
