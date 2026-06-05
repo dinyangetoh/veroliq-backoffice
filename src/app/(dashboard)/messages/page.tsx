@@ -2,6 +2,7 @@
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useMemo, useState } from 'react';
+import { SessionDetailDrawer } from '@/components/sites/SessionDetailDrawer';
 import { useGetMessagesQuery, useGetSessionMessagesQuery } from '@/redux/api/adminApi';
 import {
   Bar,
@@ -269,56 +270,11 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {selectedSessionId && thread ? (
-        <div className="fixed inset-0 z-40 flex justify-end bg-black/40" onClick={() => setSelectedSessionId(null)}>
-          <div
-            className="h-full w-full max-w-2xl overflow-y-auto bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-start justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Conversation Thread</h3>
-                <p className="text-xs text-gray-500">
-                  {thread.session.site?.domain ?? '-'} - {thread.session.sessionToken}
-                </p>
-              </div>
-              <button className="text-sm text-gray-500" onClick={() => setSelectedSessionId(null)}>
-                Close
-              </button>
-            </div>
-            <div className="mb-4 flex flex-wrap gap-2 text-xs">
-              <span className="rounded-full bg-slate-100 px-3 py-1">messages: {thread.session.messageCount}</span>
-              <span className="rounded-full bg-indigo-50 px-3 py-1 text-indigo-700">
-                assistant: {thread.stats.assistantMessageCount}
-              </span>
-              <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
-                avg latency: {thread.stats.avgResponseTimeMs ?? '-'} ms
-              </span>
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
-                avg confidence: {thread.stats.avgConfidenceScore ?? '-'}
-              </span>
-            </div>
-            <div className="space-y-3">
-              {thread.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`rounded-lg p-3 ${
-                    message.role === 'assistant' ? 'bg-indigo-50 text-indigo-900' : 'bg-slate-100 text-slate-900'
-                  }`}
-                >
-                  <div className="mb-1 text-xs font-medium uppercase tracking-wide">
-                    {message.role}
-                    <span className="ml-2 font-normal normal-case text-gray-500">
-                      {new Date(message.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <SessionDetailDrawer
+        open={selectedSessionId != null}
+        onClose={() => setSelectedSessionId(null)}
+        detail={thread}
+      />
     </div>
   );
 }

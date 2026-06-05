@@ -8,96 +8,78 @@ type SessionDetailDrawerProps = {
   detail?: SessionDetailResponse;
 };
 
-function confidencePercent(value: number | null | undefined) {
-  if (value == null) return '—';
-  return `${Math.round(value * 100)}%`;
-}
-
 export function SessionDetailDrawer({ open, onClose, detail }: SessionDetailDrawerProps) {
   if (!open) return null;
 
   return (
-    <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl border-l border-gray-200 bg-white shadow-2xl">
-      <div className="flex h-full flex-col">
-        <div className="border-b border-gray-200 px-5 py-4">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
-              Session · {detail?.session?.sessionToken?.slice(0, 16) ?? 'Loading'}
-            </span>
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
+      <aside
+        className="flex h-full w-full max-w-2xl flex-col bg-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="border-b border-gray-200 px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Conversation Thread</h3>
+              <p className="mt-1 text-xs text-gray-500">
+                {detail?.session?.site?.domain ?? '—'} - {detail?.session?.sessionToken ?? 'Loading…'}
+              </p>
+            </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+              className="text-sm text-gray-500 hover:text-gray-700"
             >
               Close
             </button>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">Conversation transcript</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {detail?.session?.startedAt ? new Date(detail.session.startedAt).toLocaleString() : '—'} ·{' '}
-            <span className="font-mono">{detail?.session?.pageUrl ?? '—'}</span>
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wider text-gray-500">Messages</p>
-              <p className="mt-1 text-base font-semibold text-gray-900">{detail?.session?.messageCount ?? '—'}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wider text-gray-500">Assistant</p>
-              <p className="mt-1 text-base font-semibold text-gray-900">{detail?.stats?.assistantMessageCount ?? '—'}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wider text-gray-500">Avg latency</p>
-              <p className="mt-1 text-base font-semibold text-gray-900">
-                {detail?.stats?.avgResponseTimeMs != null ? `${detail.stats.avgResponseTimeMs}ms` : '—'}
-              </p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wider text-gray-500">Avg confidence</p>
-              <p className="mt-1 text-base font-semibold text-gray-900">
-                {confidencePercent(detail?.stats?.avgConfidenceScore)}
-              </p>
-            </div>
+
+          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+              messages: {detail?.session?.messageCount ?? '—'}
+            </span>
+            <span className="rounded-full bg-indigo-50 px-3 py-1 text-indigo-700">
+              assistant: {detail?.stats?.assistantMessageCount ?? '—'}
+            </span>
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
+              avg latency: {detail?.stats?.avgResponseTimeMs ?? '—'} ms
+            </span>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+              avg confidence: {detail?.stats?.avgConfidenceScore ?? '—'}
+            </span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-5">
           {!detail ? (
-            <p className="text-sm text-gray-500">Loading session detail...</p>
+            <p className="text-sm text-gray-500">Loading conversation thread…</p>
           ) : detail.messages.length === 0 ? (
-            <p className="text-sm text-gray-500">No conversation transcript available.</p>
+            <p className="text-sm text-gray-500">No messages in this session.</p>
           ) : (
             <div className="space-y-3">
-              {detail.messages.map((msg) => (
-                <div key={msg.id} className="space-y-1">
-                  <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div
-                      className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
-                        msg.role === 'user'
-                          ? 'rounded-br-sm bg-gray-900 text-white'
-                          : 'rounded-bl-sm border border-indigo-100 bg-indigo-50 text-gray-900'
-                      }`}
-                    >
-                      <div className={`mb-1 text-[10px] uppercase tracking-wider ${msg.role === 'user' ? 'text-white/60' : 'text-gray-500'}`}>
-                        {msg.role === 'user' ? 'Visitor' : 'Vera AI'} ·{' '}
-                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                      </div>
-                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                      {msg.role !== 'user' && (
-                        <div className="mt-1 text-[10px] text-gray-500">
-                          {msg.responseTimeMs != null ? `Latency ${msg.responseTimeMs}ms` : 'Latency —'} ·{' '}
-                          {confidencePercent(msg.confidenceScore ?? null)}
-                        </div>
-                      )}
+              {detail.messages.map((message) => {
+                const isAssistant = message.role === 'assistant';
+                return (
+                  <div
+                    key={message.id}
+                    className={`rounded-lg p-3 ${
+                      isAssistant ? 'bg-indigo-50 text-indigo-900' : 'bg-slate-100 text-slate-900'
+                    }`}
+                  >
+                    <div className="mb-1 text-xs font-medium uppercase tracking-wide">
+                      {message.role}
+                      <span className="ml-2 font-normal normal-case text-gray-500">
+                        {new Date(message.createdAt).toLocaleString()}
+                      </span>
                     </div>
+                    <p className="whitespace-pre-wrap text-sm">{message.content}</p>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
-      </div>
-    </aside>
+      </aside>
+    </div>
   );
 }
-
