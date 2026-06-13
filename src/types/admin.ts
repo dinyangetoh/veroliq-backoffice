@@ -198,6 +198,27 @@ export type EvaluationListResponse = {
   limit: number;
 };
 
+export type EvalRunSummary = {
+  id: string;
+  label: string | null;
+  queuedCount: number;
+  createdAt: string;
+  completedCount: number;
+  failedCount: number;
+  avgOverallScore: number | null;
+  avgRetrievalQuality: number | null;
+  avgAnswerAccuracy: number | null;
+  avgConversationContinuity: number | null;
+  avgLeadCaptureExecution: number | null;
+  avgRedundancy: number | null;
+  avgConciseness: number | null;
+};
+
+export type EvalRunDetail = {
+  run: EvalRunSummary;
+  evaluations: EvaluationRow[];
+};
+
 export type SessionDetailResponse = {
   session: {
     id: string;

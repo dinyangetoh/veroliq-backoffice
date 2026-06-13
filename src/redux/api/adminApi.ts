@@ -2,6 +2,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type {
   AdminSite,
   AdminSiteDetail,
+  EvalRunDetail,
+  EvalRunSummary,
   EvaluationListResponse,
   PlatformMetrics,
   MessageListResponse,
@@ -346,9 +348,20 @@ export const adminApi = createApi({
       query: (params) => ({ url: '/admin/evaluations', params: params ?? undefined }),
       providesTags: ['Evaluations'],
     }),
-    runEvaluation: builder.mutation<{ queued: number }, void>({
-      query: () => ({ url: '/admin/evaluations/run', method: 'POST' }),
+    runEvaluation: builder.mutation<
+      { runId: string; queued: number; label: string | null },
+      { label?: string } | void
+    >({
+      query: (body) => ({ url: '/admin/evaluations/run', method: 'POST', body: body ?? undefined }),
       invalidatesTags: ['Evaluations'],
+    }),
+    getEvalRuns: builder.query<EvalRunSummary[], void>({
+      query: () => '/admin/evaluations/runs',
+      providesTags: ['Evaluations'],
+    }),
+    getEvalRunDetail: builder.query<EvalRunDetail, string>({
+      query: (id) => `/admin/evaluations/runs/${id}`,
+      providesTags: (_r, _e, id) => [{ type: 'Evaluations', id }],
     }),
   }),
 });
@@ -383,4 +396,6 @@ export const {
   useCancelNotificationMutation,
   useGetEvaluationsQuery,
   useRunEvaluationMutation,
+  useGetEvalRunsQuery,
+  useGetEvalRunDetailQuery,
 } = adminApi;
