@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type {
   AdminSite,
   AdminSiteDetail,
+  EvaluationListResponse,
   PlatformMetrics,
   MessageListResponse,
   SessionDetailResponse,
@@ -33,6 +34,7 @@ export const adminApi = createApi({
     'Notifications',
     'NotificationMetrics',
     'AdminSession',
+    'Evaluations',
   ],
   endpoints: (builder) => ({
     adminLogin: builder.mutation<
@@ -337,6 +339,17 @@ export const adminApi = createApi({
         'NotificationMetrics',
       ],
     }),
+    getEvaluations: builder.query<
+      EvaluationListResponse,
+      { page?: number; limit?: number } | void
+    >({
+      query: (params) => ({ url: '/admin/evaluations', params: params ?? undefined }),
+      providesTags: ['Evaluations'],
+    }),
+    runEvaluation: builder.mutation<{ queued: number }, void>({
+      query: () => ({ url: '/admin/evaluations/run', method: 'POST' }),
+      invalidatesTags: ['Evaluations'],
+    }),
   }),
 });
 
@@ -368,4 +381,6 @@ export const {
   useGetNotificationsQueueHealthQuery,
   useRetryNotificationMutation,
   useCancelNotificationMutation,
+  useGetEvaluationsQuery,
+  useRunEvaluationMutation,
 } = adminApi;

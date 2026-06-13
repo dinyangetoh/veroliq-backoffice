@@ -164,12 +164,50 @@ export type SessionListResponse = {
   };
 };
 
+export type EvaluationDetail = {
+  id: string;
+  sessionId: string;
+  siteId: string;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED';
+  overallScore: number | null;
+  retrievalQuality: number | null;
+  answerAccuracy: number | null;
+  conversationContinuity: number | null;
+  leadCaptureExecution: number | null;
+  redundancy: number | null;
+  conciseness: number | null;
+  verdict: string | null;
+  issues: string[] | null;
+  claudeModel: string | null;
+  messageCount: number | null;
+  errorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
+  evaluatedAt: string | null;
+};
+
+export type EvaluationRow = EvaluationDetail & {
+  session: { startedAt: string; messageCount: number; sessionToken: string };
+  site: { domain: string };
+};
+
+export type EvaluationListResponse = {
+  evaluations: EvaluationRow[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
 export type SessionDetailResponse = {
   session: {
     id: string;
     sessionToken: string;
     startedAt: string;
     pageUrl: string;
+    referrer?: string | null;
+    userAgent?: string | null;
+    ipAddress?: string | null;
+    outcome?: string | null;
     messageCount: number;
     hasLead: boolean;
     site?: { id: string; domain: string };
@@ -190,6 +228,7 @@ export type SessionDetailResponse = {
     intentDetected?: string | null;
     intentScore?: number | null;
   }>;
+  evaluation: EvaluationDetail | null;
 };
 
 export type MessageListResponse = {

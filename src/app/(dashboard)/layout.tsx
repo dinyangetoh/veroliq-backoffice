@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Globe, Users, MessageSquare, Briefcase, Activity, Bug, Bell, FileText } from "lucide-react";
+import { LayoutDashboard, Globe, Users, MessageSquare, Briefcase, Activity, Bug, Bell, FileText, BarChart3 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 
 export default function DashboardLayout({
@@ -29,6 +29,11 @@ export default function DashboardLayout({
             <li>
               <Link href="/sessions" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
                 <Users className="w-5 h-5 text-gray-400" /> Sessions
+              </Link>
+            </li>
+            <li>
+              <Link href="/evaluations" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
+                <BarChart3 className="w-5 h-5 text-gray-400" /> Evaluations
               </Link>
             </li>
             <li>

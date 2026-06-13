@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { skipToken } from '@reduxjs/toolkit/query';
-import { SessionDetailDrawer } from '@/components/sites/SessionDetailDrawer';
-import { useGetSessionMessagesQuery, useGetSessionsQuery } from "@/redux/api/adminApi";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useGetSessionsQuery } from "@/redux/api/adminApi";
 import {
   Bar,
   BarChart,
@@ -14,63 +13,13 @@ import {
   YAxis,
 } from 'recharts';
 
-function formatDurationMs(durationMs: number) {
-  const totalSeconds = Math.floor(durationMs / 1000);
-  if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return '—';
-  if (totalSeconds < 60) return `${totalSeconds}s`;
-
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes < 60) return `${minutes}m ${seconds}s`;
-
-  const hours = Math.floor(minutes / 60);
-  const remainderMinutes = minutes % 60;
-  return `${hours}h ${remainderMinutes}m`;
-}
-
 export default function SessionsPage() {
+  const router = useRouter();
   const [chatOnly, setChatOnly] = useState(true);
   const [page, setPage] = useState(1);
   const limit = 50;
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useGetSessionsQuery({ chatOnly, page, limit });
-  const { data: thread } = useGetSessionMessagesQuery(
-    selectedSessionId ? { sessionId: selectedSessionId } : skipToken
-  );
-
-  const selectedDuration = useMemo(() => {
-    if (!thread) return null;
-    if (thread.messages.length === 0) return null;
-
-    const startMsCandidate = thread.session?.startedAt
-      ? new Date(thread.session.startedAt).getTime()
-      : NaN;
-    const firstUser = thread.messages.find((m) => m.role === 'user');
-    const firstUserMsCandidate = firstUser ? new Date(firstUser.createdAt).getTime() : NaN;
-    const startMs = Number.isFinite(startMsCandidate) ? startMsCandidate : firstUserMsCandidate;
-
-    const lastAssistant = [...thread.messages].reverse().find((m) => m.role === 'assistant');
-    const endMs = lastAssistant ? new Date(lastAssistant.createdAt).getTime() : NaN;
-
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return null;
-
-    const durationMs = Math.max(0, endMs - startMs);
-    return formatDurationMs(durationMs);
-  }, [thread]);
-
-  const selectedMetadata = useMemo(() => {
-    if (!thread) return null;
-    if (thread.messages.length === 0) return null;
-
-    const assistantMessages = thread.messages.filter((m) => m.role === 'assistant');
-
-    const intent = assistantMessages.find((m) => m.intentDetected)?.intentDetected ?? null;
-    const confidenceScore = assistantMessages.find((m) => m.confidenceScore != null)?.confidenceScore ?? null;
-    const responseTimeMs = assistantMessages.find((m) => m.responseTimeMs != null)?.responseTimeMs ?? null;
-
-    return { intent, confidenceScore, responseTimeMs };
-  }, [thread]);
 
   if (isLoading) return <div className="p-8 text-gray-500">Loading sessions...</div>;
   if (error) return <div className="p-8 text-red-500">Failed to load sessions.</div>;
@@ -153,8 +102,8 @@ export default function SessionsPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Site</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metadata</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Messages</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -162,39 +111,26 @@ export default function SessionsPage() {
               <tr
                 key={session.id}
                 className="cursor-pointer hover:bg-indigo-50/40"
-                onClick={() => setSelectedSessionId(session.id)}
+                onClick={() => router.push(`/sessions/${session.id}`)}
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(session.startedAt).toLocaleString()}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[220px]">{session.sessionToken}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">{session.site?.domain}</td>
-                <td className="px-6 py-4 text-xs text-gray-600">
-                  {session.id === selectedSessionId && selectedMetadata ? (
-                    <div className="flex flex-wrap gap-1">
-                      {selectedMetadata.intent ? (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5">intent: {selectedMetadata.intent}</span>
-                      ) : null}
-                      {selectedMetadata.confidenceScore != null ? (
-                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
-                          conf: {selectedMetadata.confidenceScore.toFixed(3)}
-                        </span>
-                      ) : null}
-                      {selectedMetadata.responseTimeMs != null ? (
-                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-700">
-                          latency: {selectedMetadata.responseTimeMs}ms
-                        </span>
-                      ) : null}
-                      {selectedMetadata.intent == null &&
-                      selectedMetadata.confidenceScore == null &&
-                      selectedMetadata.responseTimeMs == null ? (
-                        <span className="text-gray-400">—</span>
-                      ) : null}
-                    </div>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(session.startedAt).toLocaleString()}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[220px]">
+                  {session.sessionToken}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                  {session.site?.domain}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {session.messageCount}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {session.hasLead ? (
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">Yes</span>
                   ) : (
                     <span className="text-gray-400">—</span>
                   )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {session.id === selectedSessionId ? selectedDuration ?? '—' : '—'}
                 </td>
               </tr>
             ))}
@@ -225,12 +161,6 @@ export default function SessionsPage() {
           </button>
         </div>
       </div>
-
-      <SessionDetailDrawer
-        open={selectedSessionId != null}
-        onClose={() => setSelectedSessionId(null)}
-        detail={thread}
-      />
     </div>
   );
 }
