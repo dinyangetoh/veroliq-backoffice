@@ -212,6 +212,8 @@ export type EvalRunSummary = {
   avgLeadCaptureExecution: number | null;
   avgRedundancy: number | null;
   avgConciseness: number | null;
+  anthropicBatchId?: string | null;
+  batchStatus?: string | null;
 };
 
 export type EvalRunDetail = {

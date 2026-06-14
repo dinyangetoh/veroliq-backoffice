@@ -217,6 +217,11 @@ function RunCard({ run, onClick }: { run: EvalRunSummary; onClick: () => void })
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">{run.completedCount} done</span>
           {run.failedCount > 0 && <span className="rounded-full bg-red-50 px-2.5 py-1 font-medium text-red-700">{run.failedCount} failed</span>}
           {pending > 0 && <span className="rounded-full bg-amber-50 px-2.5 py-1 font-medium text-amber-700 animate-pulse">{pending} pending</span>}
+          {run.anthropicBatchId && run.batchStatus && run.batchStatus !== 'ended' && (
+            <span className="rounded-full bg-violet-50 px-2.5 py-1 font-medium text-violet-700 animate-pulse">
+              batch {run.batchStatus}
+            </span>
+          )}
         </div>
       </div>
 

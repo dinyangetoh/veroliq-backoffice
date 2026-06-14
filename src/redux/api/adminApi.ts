@@ -363,6 +363,10 @@ export const adminApi = createApi({
       query: (id) => `/admin/evaluations/runs/${id}`,
       providesTags: (_r, _e, id) => [{ type: 'Evaluations', id }],
     }),
+    pollBatch: builder.mutation<{ status: string; completed?: number; failed?: number; message?: string }, string>({
+      query: (id) => ({ url: `/admin/evaluations/runs/${id}/poll`, method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => ['Evaluations', { type: 'Evaluations', id }],
+    }),
   }),
 });
 
@@ -398,4 +402,5 @@ export const {
   useRunEvaluationMutation,
   useGetEvalRunsQuery,
   useGetEvalRunDetailQuery,
+  usePollBatchMutation,
 } = adminApi;

@@ -1,8 +1,9 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { useGetEvalRunDetailQuery } from '@/redux/api/adminApi';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
+import { useGetEvalRunDetailQuery, usePollBatchMutation } from '@/redux/api/adminApi';
 
 function ScorePill({ score }: { score: number | null }) {
   if (score === null) return <span className="text-xs text-gray-400">—</span>;
@@ -38,10 +39,40 @@ function ScoreBar({ label, score }: { label: string; score: number | null }) {
   );
 }
 
+function BatchStatusPill({ status }: { status: string | null | undefined }) {
+  if (!status) return null;
+  const styles =
+    status === 'ended'
+      ? 'bg-emerald-50 text-emerald-700'
+      : status === 'expired' || status === 'canceled'
+        ? 'bg-red-50 text-red-700'
+        : 'bg-amber-50 text-amber-700 animate-pulse';
+  return (
+    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${styles}`}>
+      batch {status}
+    </span>
+  );
+}
+
 export default function EvalRunDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { data, isLoading, error } = useGetEvalRunDetailQuery(id);
+  const { data, isLoading, error, refetch } = useGetEvalRunDetailQuery(id);
+  const [pollBatch, { isLoading: isPolling }] = usePollBatchMutation();
+
+  const handlePoll = async () => {
+    try {
+      const result = await pollBatch(id).unwrap();
+      if (result.status === 'ended') {
+        toast.success(`Batch complete — ${result.completed} evaluated, ${result.failed ?? 0} failed`);
+      } else {
+        toast.info(`Batch status: ${result.status}. ${result.message ?? ''}`);
+      }
+      refetch();
+    } catch {
+      toast.error('Failed to poll batch status');
+    }
+  };
 
   if (isLoading) return <div className="p-8 text-gray-500">Loading run…</div>;
   if (error || !data) return <div className="p-8 text-red-500">Failed to load run.</div>;
@@ -51,21 +82,37 @@ export default function EvalRunDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => router.push('/evaluations')}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back
-        </button>
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-gray-900">
-            {run.label ?? <span className="italic text-gray-400 font-normal">Unlabelled run</span>}
-          </h2>
-          <p className="text-xs text-gray-500">{new Date(run.createdAt).toLocaleString()}</p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/evaluations')}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
+          </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold tracking-tight text-gray-900">
+                {run.label ?? <span className="italic text-gray-400 font-normal">Unlabelled run</span>}
+              </h2>
+              <BatchStatusPill status={run.batchStatus} />
+            </div>
+            <p className="text-xs text-gray-500">{new Date(run.createdAt).toLocaleString()}</p>
+          </div>
         </div>
+        {run.anthropicBatchId && run.batchStatus !== 'ended' && (
+          <button
+            type="button"
+            onClick={handlePoll}
+            disabled={isPolling}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isPolling ? 'animate-spin' : ''}`} />
+            {isPolling ? 'Checking…' : 'Check batch status'}
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
