@@ -55,9 +55,9 @@ export function SiteIntelligenceTab({ siteId }: { siteId: string }) {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <h3 className="text-sm font-semibold text-gray-900">Site Intelligence</h3>
-        {intel.industry && <Tag label={String(intel.industry)} color="blue" />}
-        {intel.business_model && <Tag label={String(intel.business_model)} color="green" />}
-        {intel.currency && <Tag label={String(intel.currency)} color="amber" />}
+        {!!intel.industry && <Tag label={String(intel.industry)} color="blue" />}
+        {!!intel.business_model && <Tag label={String(intel.business_model)} color="green" />}
+        {!!intel.currency && <Tag label={String(intel.currency)} color="amber" />}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -135,7 +135,7 @@ export function SiteIntelligenceTab({ siteId }: { siteId: string }) {
         </IntelligenceSection>
       )}
 
-      {intel.lead_capture_framing && (
+      {!!intel.lead_capture_framing && (
         <p className="text-xs text-gray-500">
           <span className="font-medium">Lead framing:</span> {String(intel.lead_capture_framing)}
         </p>
