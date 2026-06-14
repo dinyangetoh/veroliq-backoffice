@@ -27,7 +27,7 @@ export function SiteGapsTab({ siteId }: { siteId: string }) {
       <div className="py-12 text-center">
         <p className="text-sm font-medium text-gray-700">No knowledge gaps detected</p>
         <p className="mt-1 text-xs text-gray-400">
-          Gaps appear here when Vera cannot fully answer a visitor question (coverage score &lt; 0.4).
+          Gaps appear here when visitors ask questions Vera could not answer from your site content.
         </p>
       </div>
     );
@@ -43,13 +43,14 @@ export function SiteGapsTab({ siteId }: { siteId: string }) {
         <span className="text-xs text-gray-400">{gaps.length} total</span>
       </div>
       <p className="text-xs text-gray-500">
-        Questions visitors asked that Vera could not fully answer. Add this content to your site and re-crawl.
+        Genuine questions visitors asked that Vera could not answer from your knowledge base. Add this content to your site and re-crawl, or upload a PDF/document.
       </p>
 
       <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
         {gaps.map((gap) => {
           const examples = Array.isArray(gap.exampleQuestions) ? (gap.exampleQuestions as string[]) : [];
           const isExpanded = expandedId === gap.id;
+          const suggestion = (gap as any).contentSuggestion as string | null | undefined;
           return (
             <div key={gap.id} className="p-4">
               <div className="flex items-start gap-3">
@@ -70,14 +71,24 @@ export function SiteGapsTab({ siteId }: { siteId: string }) {
                     <span>Asked {gap.questionCount}×</span>
                     <span>Last: {new Date(gap.lastAsked).toLocaleDateString()}</span>
                   </div>
-                  {isExpanded && examples.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      <p className="text-xs font-medium text-gray-500">Example questions:</p>
-                      {examples.map((q, i) => (
-                        <p key={i} className="text-xs text-gray-600 pl-2 border-l-2 border-gray-200">
-                          {q}
-                        </p>
-                      ))}
+                  {isExpanded && (
+                    <div className="mt-3 space-y-3">
+                      {suggestion && (
+                        <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
+                          <p className="text-xs font-semibold text-blue-700 mb-1">AI suggestion</p>
+                          <p className="text-xs text-blue-800">{suggestion}</p>
+                        </div>
+                      )}
+                      {examples.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-gray-500 mb-1">Visitor phrasing:</p>
+                          {examples.map((q, i) => (
+                            <p key={i} className="text-xs text-gray-600 pl-2 border-l-2 border-gray-200 mb-1">
+                              {q}
+                            </p>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
