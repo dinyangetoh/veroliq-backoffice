@@ -15,6 +15,8 @@ import {
 import { SiteHeader, SiteOverviewTab } from '@/components/sites/SiteOverviewTab';
 import { PaginatedTable } from '@/components/sites/PaginatedTable';
 import { SessionDetailDrawer } from '@/components/sites/SessionDetailDrawer';
+import { SiteGapsTab } from '@/components/sites/SiteGapsTab';
+import { SiteIntelligenceTab } from '@/components/sites/SiteIntelligenceTab';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -22,6 +24,8 @@ const TABS = [
   { id: 'leads', label: 'Leads' },
   { id: 'crawls', label: 'Crawls' },
   { id: 'events', label: 'Events' },
+  { id: 'gaps', label: 'Gaps' },
+  { id: 'intelligence', label: 'Intelligence' },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -218,6 +222,10 @@ function SiteDetailContent() {
           onPageChange={setPage}
         />
       )}
+
+      {tab === 'gaps' && <SiteGapsTab siteId={siteId} />}
+
+      {tab === 'intelligence' && <SiteIntelligenceTab siteId={siteId} />}
     </div>
   );
 }

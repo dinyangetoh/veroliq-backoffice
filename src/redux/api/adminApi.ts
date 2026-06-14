@@ -367,6 +367,25 @@ export const adminApi = createApi({
       query: (id) => ({ url: `/admin/evaluations/runs/${id}/poll`, method: 'POST' }),
       invalidatesTags: (_r, _e, id) => ['Evaluations', { type: 'Evaluations', id }],
     }),
+    getSiteGaps: builder.query<
+      { gaps: Array<{ id: string; clusterLabel: string; questionCount: number; exampleQuestions: unknown; contentSuggestion?: string; status: string; firstAsked: string; lastAsked: string }>; total: number },
+      string
+    >({
+      query: (siteId) => `/admin/sites/${siteId}/gaps`,
+      providesTags: (_r, _e, siteId) => [{ type: 'Sites', id: `${siteId}-gaps` }],
+    }),
+    patchSiteGap: builder.mutation<unknown, { siteId: string; gapId: string; status: string; notes?: string }>({
+      query: ({ siteId, gapId, status, notes }) => ({
+        url: `/admin/sites/${siteId}/gaps/${gapId}`,
+        method: 'PATCH',
+        body: { status, notes },
+      }),
+      invalidatesTags: (_r, _e, { siteId }) => [{ type: 'Sites', id: `${siteId}-gaps` }],
+    }),
+    getSiteIntelligence: builder.query<{ intelligence: Record<string, unknown> | null }, string>({
+      query: (siteId) => `/admin/sites/${siteId}/intelligence`,
+      providesTags: (_r, _e, siteId) => [{ type: 'Sites', id: `${siteId}-intelligence` }],
+    }),
   }),
 });
 
@@ -403,4 +422,7 @@ export const {
   useGetEvalRunsQuery,
   useGetEvalRunDetailQuery,
   usePollBatchMutation,
+  useGetSiteGapsQuery,
+  usePatchSiteGapMutation,
+  useGetSiteIntelligenceQuery,
 } = adminApi;
