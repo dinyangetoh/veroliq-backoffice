@@ -10,6 +10,7 @@ import type {
   SessionDetailResponse,
   SessionListResponse,
   SiteDashboard,
+  SupportPattern,
 } from '@/types/admin';
 
 const baseUrl =
@@ -37,6 +38,7 @@ export const adminApi = createApi({
     'NotificationMetrics',
     'AdminSession',
     'Evaluations',
+    'SupportPatterns',
   ],
   endpoints: (builder) => ({
     adminLogin: builder.mutation<
@@ -386,6 +388,30 @@ export const adminApi = createApi({
       query: (siteId) => `/admin/sites/${siteId}/intelligence`,
       providesTags: (_r, _e, siteId) => [{ type: 'Sites', id: `${siteId}-intelligence` }],
     }),
+    getSupportPatterns: builder.query<SupportPattern[], 'proposed' | 'approved' | 'rejected' | void>({
+      query: (status) => ({ url: '/admin/support-patterns', params: { status: status ?? 'proposed' } }),
+      providesTags: ['SupportPatterns'],
+    }),
+    approveSupportPattern: builder.mutation<SupportPattern, { id: string; approvedBy: string }>({
+      query: ({ id, approvedBy }) => ({
+        url: `/admin/support-patterns/${id}/approve`,
+        method: 'POST',
+        body: { approvedBy },
+      }),
+      invalidatesTags: ['SupportPatterns'],
+    }),
+    rejectSupportPattern: builder.mutation<SupportPattern, { id: string; rejectedBy: string }>({
+      query: ({ id, rejectedBy }) => ({
+        url: `/admin/support-patterns/${id}/reject`,
+        method: 'POST',
+        body: { rejectedBy },
+      }),
+      invalidatesTags: ['SupportPatterns'],
+    }),
+    revokeSupportPattern: builder.mutation<SupportPattern, string>({
+      query: (id) => ({ url: `/admin/support-patterns/${id}/revoke`, method: 'POST' }),
+      invalidatesTags: ['SupportPatterns'],
+    }),
   }),
 });
 
@@ -425,4 +451,8 @@ export const {
   useGetSiteGapsQuery,
   usePatchSiteGapMutation,
   useGetSiteIntelligenceQuery,
+  useGetSupportPatternsQuery,
+  useApproveSupportPatternMutation,
+  useRejectSupportPatternMutation,
+  useRevokeSupportPatternMutation,
 } = adminApi;

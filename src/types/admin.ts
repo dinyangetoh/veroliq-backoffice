@@ -279,3 +279,19 @@ export type MessageListResponse = {
   page: number;
   limit: number;
 };
+
+export type SupportPattern = {
+  id: string;
+  siteId: string | null;
+  label: string;
+  exemplarPhrases: string[];
+  route: string;
+  qdrantPointId: string | null;
+  confidenceThreshold: number | null;
+  hitCount: number;
+  lastMatchedAt: string | null;
+  status: 'proposed' | 'approved' | 'rejected';
+  approvedBy: string | null;
+  approvedAt: string | null;
+  createdAt: string;
+};

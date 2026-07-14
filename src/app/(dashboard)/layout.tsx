@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Globe, Users, MessageSquare, Briefcase, Activity, Bug, Bell, FileText, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Globe, Users, MessageSquare, Briefcase, Activity, Bug, Bell, FileText, BarChart3, Sparkles } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 
 export default function DashboardLayout({
@@ -67,6 +67,14 @@ export default function DashboardLayout({
             <li>
               <Link href="/notifications/templates" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
                 <FileText className="w-5 h-5 text-gray-400" /> Templates
+              </Link>
+            </li>
+            <li className="pt-3">
+              <span className="px-3 text-[11px] uppercase tracking-wider text-gray-400">Learned Triage</span>
+            </li>
+            <li>
+              <Link href="/support-patterns" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
+                <Sparkles className="w-5 h-5 text-gray-400" /> Pattern Review
               </Link>
             </li>
           </ul>
